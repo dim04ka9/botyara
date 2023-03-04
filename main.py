@@ -3,25 +3,29 @@ import telebot
 from telebot import types
 
 bot = telebot.TeleBot('5844454094:AAHygFGw3mZRQywtTrpw4_jxSs8GH79sies')
+
+
 @bot.message_handler(commands=['start'])
 def start(message):
-
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🛒 Сделать заказ")
     markup.add(btn1)
     bot.send_message(message.from_user.id, "Здравствуйте, готовы сделать заказ?", reply_markup=markup)
 
+categories_markap = types.ReplyKeyboardMarkup(resize_keyboard=True)
+btn1 = types.KeyboardButton("🍓 Плодово-ягодные")
+btn2 = types.KeyboardButton('🌸 Декоративные')
+categories_markap.add(btn1, btn2)
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
+    # Подключение к БД
+    con = sqlite3.connect("db.sqlite")
+    # Создание курсора
+    cur = con.cursor()
 
-
-    if message.text == '🛒 Сделать заказ' :
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn1 = types.KeyboardButton("🍓 Плодово-ягодные")
-        btn2 = types.KeyboardButton('🌸 Декоративные')
-        markup.add(btn1, btn2)
-        bot.send_message(message.from_user.id, "👋 Вас приветствует бот магазина Новый садовник", reply_markup=markup)
+    if message.text == '🛒 Сделать заказ':
+        bot.send_message(message.from_user.id, "👋 Вас приветствует бот магазина Новый садовник", reply_markup=categories_markap)
         bot.send_message(message.from_user.id, '👀 Выберите интересующий вас раздел')
 
     elif message.text == '🍓 Плодово-ягодные':
@@ -43,7 +47,8 @@ def get_text_messages(message):
         btn15 = types.KeyboardButton('🍇🌑 Шелковица')
         btn16 = types.KeyboardButton('🐿️ Грецкий орех')
         btn17 = types.KeyboardButton('🔙 К разделам')
-        markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14, btn15, btn16, btn17)
+        markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14, btn15,
+                   btn16, btn17)
         bot.send_message(message.from_user.id, '⬇ Выберите подраздел', reply_markup=markup)
 
     elif message.text == '🔙 К подразделам':
@@ -65,15 +70,12 @@ def get_text_messages(message):
         btn15 = types.KeyboardButton('🍇🌑 Шелковица')
         btn16 = types.KeyboardButton('🐿️ Грецкий орех')
         btn17 = types.KeyboardButton('🔙 К разделам')
-        markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14, btn15, btn16, btn17)
+        markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14, btn15,
+                   btn16, btn17)
         bot.send_message(message.from_user.id, '⬇ Выберите подраздел', reply_markup=markup)
 
-    elif message.text == '🔙 К разделам' :
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn1 = types.KeyboardButton("🍓 Плодово-ягодные")
-        btn2 = types.KeyboardButton('🌸 Декоративные')
-        markup.add(btn1, btn2)
-        bot.send_message(message.from_user.id, "👀 Выберите интересующий вас раздел", reply_markup=markup)
+    elif message.text == '🔙 К разделам':
+        bot.send_message(message.from_user.id, "👀 Выберите интересующий вас раздел", reply_markup=categories_markap)
 
     elif message.text == '🍑 Абрикос':
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -100,9 +102,11 @@ def get_text_messages(message):
         btn1 = types.KeyboardButton('🔙 К абрикосам')
         btn2 = types.KeyboardButton('🛒 В корзину')
         markup.add(btn1, btn2)
-        bot.send_photo(message.from_user.id, "https://imgur.com/a/fSA5spG" )
-        bot.send_message(message.from_user.id, 'Стоимость: ', reply_markup=markup)
-        bot.send_message(message.from_user.id, 'Количество: ', reply_markup=markup)
+        bot.send_photo(message.from_user.id, "https://imgur.com/a/fSA5spG")
+
+        product = cur.execute("""SELECT * FROM products WHERE name = 'Брянский ранний'""").fetchone()
+        bot.send_message(message.from_user.id, f'Стоимость: {product[4]}', reply_markup=markup)
+        bot.send_message(message.from_user.id, f'Количество: {product[2]}', reply_markup=markup)
 
     elif message.text == 'Орловчанин':
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -664,5 +668,4 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, 'цена: сто тыщ мильонов рублей')
 
 
-
-bot.polling(none_stop=True) #обязательная для работы бота часть
+bot.polling(none_stop=True)  # обязательная для работы бота часть
